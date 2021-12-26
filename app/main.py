@@ -11,9 +11,8 @@ dbname = os.environ.get("DB_NAME")
 user = os.environ.get("DB_USER")
 user_pass = os.environ.get("DB_USER_PASS")
 hostname = os.environ.get("DB_HOSTNAME")
-host_port = os.environ.get("DB_PORT")
 
-connection = psycopg2.connect(database=dbname, user=user, password=user_pass, host=hostname, port=host_port)
+connection = psycopg2.connect(database=dbname, user=user, password=user_pass, host=hostname)
 cursor = connection.cursor(cursor_factory=RealDictCursor)
 
 app = FastAPI()

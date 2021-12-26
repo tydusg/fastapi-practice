@@ -1,0 +1,15 @@
+[1mdiff --git a/app/main.py b/app/main.py[m
+[1mindex e2d4361..7594600 100644[m
+[1m--- a/app/main.py[m
+[1m+++ b/app/main.py[m
+[36m@@ -11,9 +11,8 @@[m [mdbname = os.environ.get("DB_NAME")[m
+ user = os.environ.get("DB_USER")[m
+ user_pass = os.environ.get("DB_USER_PASS")[m
+ hostname = os.environ.get("DB_HOSTNAME")[m
+[31m-host_port = os.environ.get("DB_PORT")[m
+ [m
+[31m-connection = psycopg2.connect(database=dbname, user=user, password=user_pass, host=hostname, port=host_port)[m
+[32m+[m[32mconnection = psycopg2.connect(database=dbname, user=user, password=user_pass, host=hostname)[m
+ cursor = connection.cursor(cursor_factory=RealDictCursor)[m
+ [m
+ app = FastAPI()[m
