@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, status, Depends
+from fastapi import FastAPI, HTTPException, status, Depends, Response
 from pydantic import BaseModel
 
 import psycopg2
@@ -72,9 +72,13 @@ def create_post(post: Post, db: Session = Depends(get_db)):
 
 # Get post by Id
 @app.get("/posts/{id}", status_code=status.HTTP_200_OK)
-def get_post_id(id: int):
-    cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),))
-    post = cursor.fetchone()
+def get_post_id(id: int, db: Session = Depends(get_db)):
+    # # psycopg2 code
+    # cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),))
+    # post = cursor.fetchone()
+
+    post = db.query(models.Post).filter(models.Post.id == id).first()
+
     if not post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} not found.")
     return {"detail": post}
@@ -82,29 +86,41 @@ def get_post_id(id: int):
 
 # Edit post by Id
 @app.put("/posts/{id}", status_code=status.HTTP_200_OK)
-def update_post(id: int, post: Post):
-    cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),))
-    post_to_update = cursor.fetchone()
-    if not post_to_update:
+def update_post(id: int, post: Post, db: Session = Depends(get_db)):
+    # cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),))
+    # post_to_update = cursor.fetchone()
+    # cursor.execute(
+    #     "UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *",
+    #     (post.title, post.content, post.published, str(id)),
+    # )
+    # post = cursor.fetchone()
+    # connection.commit()
+
+    post_to_update = db.query(models.Post).filter(models.Post.id == id)
+
+    if not post_to_update.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} not found.")
-    cursor.execute(
-        "UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *",
-        (post.title, post.content, post.published, str(id)),
-    )
-    post = cursor.fetchone()
-    connection.commit()
-    return {"updated_post": post}
+
+    post_to_update.update(post.dict(), synchronize_session=False)
+    db.commit()
+    return {"updated_post": post_to_update.first()}
 
 
 # Delete post by Id
-@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id: int):
-    cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),))
-    post = cursor.fetchone()
-    if not post:
+@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+def delete_post(id: int, db: Session = Depends(get_db)):
+    # # psycopg2 code
+    # cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),))
+    # post = cursor.fetchone()
+    # cursor.execute("DELETE FROM posts WHERE id = %s", (str(id),))
+    # connection.commit()
+
+    post = db.query(models.Post).filter(models.Post.id == id)
+
+    if not post.first():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id: {id} not found.")
-    cursor.execute("DELETE FROM posts WHERE id = %s", (str(id),))
-    connection.commit()
+    post.delete(synchronize_session=False)
+    db.commit()
     return
 
 
