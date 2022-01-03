@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, status, Depends, Response
-from pydantic import BaseModel
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -9,6 +8,8 @@ import os
 
 from . import models
 from .database import engine, get_db
+from . import schemas
+
 
 from sqlalchemy.orm import Session
 
@@ -26,12 +27,6 @@ connection = psycopg2.connect(database=dbname, user=user, password=user_pass, ho
 cursor = connection.cursor(cursor_factory=RealDictCursor)
 
 app = FastAPI()
-
-
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
 
 
 # Let's try Hello World on the root dir
@@ -53,7 +48,7 @@ def get_posts(db: Session = Depends(get_db)):
 
 # Create posts
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_post(post: Post, db: Session = Depends(get_db)):
+def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # # psycopg2 code
     # cursor.execute(
     #     "INSERT INTO posts (title, content, published) VALUES (%s, %s, %s) RETURNING *",
@@ -86,7 +81,7 @@ def get_post_id(id: int, db: Session = Depends(get_db)):
 
 # Edit post by Id
 @app.put("/posts/{id}", status_code=status.HTTP_200_OK)
-def update_post(id: int, post: Post, db: Session = Depends(get_db)):
+def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
     # cursor.execute("SELECT * FROM posts WHERE id = %s", (str(id),))
     # post_to_update = cursor.fetchone()
     # cursor.execute(
@@ -122,10 +117,3 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     post.delete(synchronize_session=False)
     db.commit()
     return
-
-
-@app.get("/sqlalchemy")
-def test_posts(db: Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
-
-    return {"data": posts}
