@@ -1,15 +1,25 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from pydantic import BaseModel
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
+
 from dotenv import load_dotenv
 import os
+
+from . import models
+from .database import engine, get_db
+
+from sqlalchemy.orm import Session
+
+models.Base.metadata.create_all(bind=engine)
+
 
 load_dotenv()
 
 dbname = os.environ.get("DB_NAME")
 user = os.environ.get("DB_USER")
-user_pass = os.environ.get("DB_USER_PASS")
+user_pass = os.environ.get("DB_USER_PASS_PSYCOPG")
 hostname = os.environ.get("DB_HOSTNAME")
 
 connection = psycopg2.connect(database=dbname, user=user, password=user_pass, host=hostname)
@@ -86,3 +96,8 @@ def delete_post(id: int):
     cursor.execute("DELETE FROM posts WHERE id = %s", (str(id),))
     connection.commit()
     return
+
+
+@app.get("/sqlalchemy")
+def test_posts(db: Session = Depends(get_db)):
+    return {"status": "success"}
