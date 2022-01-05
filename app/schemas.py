@@ -1,17 +1,18 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
-
+# Base class for Posts
 class PostBase(BaseModel):
     title: str
     content: str
     published: bool = True
 
-
+# Yeah, kinda silly. It's just PostBase
 class PostCreate(PostBase):
     pass
 
-
+#  Okay, now we're talking. This class is based on PostBase and has other extended types
 class Post(PostBase):
     id: int
     created_at: datetime
@@ -33,6 +34,17 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
+
 class UserLogin(BaseModel):
     email: str
     password: str
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
