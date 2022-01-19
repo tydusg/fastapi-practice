@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from .. import models, schemas, utils
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"],
+)
 
 
 # Create a User

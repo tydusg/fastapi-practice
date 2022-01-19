@@ -8,9 +8,6 @@ class PostBase(BaseModel):
     content: str
     published: bool = True
 
-# Yeah, kinda silly. It's just PostBase
-class PostCreate(PostBase):
-    pass
 
 #  Okay, now we're talking. This class is based on PostBase and has other extended types
 class Post(PostBase):
@@ -43,7 +40,6 @@ class UserLogin(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
-
 
 
 class TokenData(BaseModel):
